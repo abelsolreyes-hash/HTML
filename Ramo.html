@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ramo de flores</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0e6ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(135deg, #fff7f2, #f9f4ff);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="ramo"></canvas>
+  <script>
+    const canvas = document.getElementById('ramo');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth * 0.9;
+    canvas.height = window.innerHeight * 0.8;
+
+    function drawPetal(x,y,angle,length,width,fill){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.bezierCurveTo(width*0.2, -length*0.35, width*0.9, -length*0.6, 0, -length);
+      ctx.bezierCurveTo(-width*0.9, -length*0.6, -width*0.2, -length*0.35,0,0);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawFlower(x,y,scale,petalCount,colors,centerColor){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.scale(scale,scale);
+      for(let i=0;i<petalCount;i++){
+        const ang = (i/petalCount)*Math.PI*2;
+        drawPetal(0,0,ang,40,18,colors[i % colors.length]);
+      }
+      ctx.beginPath();
+      ctx.arc(0,0,12,0,Math.PI*2);
+      ctx.fillStyle = centerColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStem(x1,y1,x2,y2,thickness){
+      const gradient = ctx.createLinearGradient(x1,y1,x2,y2);
+      gradient.addColorStop(0,'#2e8b57');
+      gradient.addColorStop(1,'#3cb371');
+
+      ctx.save();
+      ctx.lineCap='round';
+      ctx.lineWidth=thickness;
+      ctx.strokeStyle=gradient;
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.quadraticCurveTo((x1+x2)/2, (y1+y2)/2 + 20, x2,y2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function buildBouquet(){
+      const baseX = canvas.width/3;
+      const baseY = canvas.height - 50;
+      const stems = 7;
+      const bouquet = [];
+      for(let i=0;i<stems;i++){
+        const tx = baseX + (i-3)*18 + (Math.random()-0.5)*10;
+        const ty = baseY - 60 - i*12 + (Math.random()-0.5)*20;
+        const px = tx + (Math.random()-0.5)*40 - 80;
+        const py = ty - 140 - i*20;
+        const scale = 0.7 + Math.random()*0.6;
+        const petalSets = [ ['#ffb3c6','#ffd6e0','#ff8fb1'], ['#ffd89f','#fff0d1','#ffc66b'], ['#d7f0ff','#aee6ff','#89d9ff'], ['#f5d6ff','#e9b3ff','#d890ff'] ];
+        const colors = petalSets[i % petalSets.length];
+        bouquet.push({stem:{x1:baseX,y1:baseY,x2:tx,y2:ty}, flower:{x:px,y:py,scale,petalCount:6 + (i%3),colors,centerColor:'#ffe080'}});
+      }
+      return bouquet;
+    }
+
+    function render(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const bouquet = buildBouquet();
+      bouquet.forEach(b=>{
+        drawStem(b.stem.x1,b.stem.y1,b.stem.x2,b.stem.y2,6);
+      });
+      bouquet.forEach(b=>{
+        drawFlower(b.flower.x,b.flower.y,b.flower.scale,b.flower.petalCount,b.flower.colors,b.flower.centerColor);
+      });
+
+      ctx.font = '30px "Great Vibes", cursive';
+      ctx.fillStyle = '#3b2b4d';
+      ctx.textAlign = 'right';
+      ctx.fillText('En tus ojos vi la', canvas.width - 50, canvas.height - 220);
+      ctx.fillText('infinidad del universo', canvas.width - 50, canvas.height - 180);
+      ctx.fillText('y al igual que la gravedad me atrae a ti', canvas.width - 50, canvas.height - 140);
+      ctx.fillText('con una fuerza inexplicable', canvas.width - 50, canvas.height - 100);
+    }
+
+    render();
+  </script>
+</body>
+</html>
